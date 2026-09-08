@@ -1,0 +1,44 @@
+{
+  "nodes": {
+    "haven-desktop": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788484175,
+        "narHash": "sha256-KojOwLn/iAJaL7tgxBf6oJUR7rfH4X6jrzfw9+dZ2cM=",
+        "owner": "ancsemi",
+        "repo": "Haven-Desktop",
+        "rev": "ecba162ded981dd7ef0bf9736576952a0b2386d5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ancsemi",
+        "repo": "Haven-Desktop",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1788752844,
+        "narHash": "sha256-VaWGJ6+cIYN2erfSecbRV+4ljI185Ty2wUrXyvQbgOw=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "dc5d91f840324650bac8c379428c7037a416959a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "haven-desktop": "haven-desktop",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
