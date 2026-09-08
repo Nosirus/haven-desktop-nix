@@ -1,14 +1,9 @@
-{ lib, stdenv, fetchFromGitHub, makeWrapper, electron
+{ lib, stdenv, makeWrapper, electron
 , nodejs, python3, pkg-config, libpulseaudio, cacert
-, src ? null }:
+, src }:
 
 let
-  source = if src != null then src else fetchFromGitHub {
-    owner = "ancsemi";
-    repo = "Haven-Desktop";
-    rev = "v1.4.30";
-    hash = lib.fakeHash;
-  };
+  source = src;
 
   version = (builtins.fromJSON (builtins.readFile "${source}/package.json")).version;
 
