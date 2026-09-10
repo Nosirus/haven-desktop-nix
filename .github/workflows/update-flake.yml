@@ -1,0 +1,71 @@
+name: update-flake
+
+on:
+  schedule:
+    # Toutes les 6 heures
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v12
+
+      - name: Update haven-desktop input
+        run: |
+          nix flake update haven-desktop
+
+      - name: Build and fix npm hash if needed
+        run: |
+          set -euo pipefail
+          if git diff --quiet flake.lock; then
+            echo "flake.lock est déjà à jour"
+            exit 0
+          fi
+
+          if nix build .#packages.x86_64-linux.default; then
+            echo "Build OK, hash à jour"
+            exit 0
+          fi
+
+          echo "Hash npm obsolète, correction..."
+          NEW_HASH=$(nix build .#packages.x86_64-linux.default 2>&1 \
+            | grep -oP 'got:\s+sha256-\K[A-Za-z0-9+/=]+' | head -1)
+
+          if [ -z "$NEW_HASH" ]; then
+            echo "ERREUR: impossible de récupérer le nouveau hash"
+            exit 1
+          fi
+
+          OLD_HASH=$(grep -oP 'outputHash = "sha256-\K[A-Za-z0-9+/=]+' package.nix)
+          sed -i "s|$OLD_HASH|$NEW_HASH|" package.nix
+          echo "Hash corrigé: $OLD_HASH -> $NEW_HASH"
+
+          if nix build .#packages.x86_64-linux.default; then
+            echo "Build OK après correction du hash"
+          else
+            echo "ERREUR: le build échoue toujours après correction"
+            exit 1
+          fi
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet flake.lock package.nix; then
+            echo "Rien à commiter"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add flake.lock package.nix
+          git commit -m "flake: update haven-desktop to latest"
+          git push origin master
