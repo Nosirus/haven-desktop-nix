@@ -40,7 +40,7 @@ jobs:
 
           echo "Hash npm obsolète, correction..."
           NEW_HASH=$(nix build .#packages.x86_64-linux.default 2>&1 \
-            | grep -oP 'got:\s+sha256-\K[A-Za-z0-9+/=]+' | head -1)
+            | grep -oP 'got:\s+sha256-\K[A-Za-z0-9+/=]+' | head -1 || true)
 
           if [ -z "$NEW_HASH" ]; then
             echo "ERREUR: impossible de récupérer le nouveau hash"
