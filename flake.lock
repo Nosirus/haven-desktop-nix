@@ -3,11 +3,11 @@
     "haven-desktop": {
       "flake": false,
       "locked": {
-        "lastModified": 1791671698,
-        "narHash": "sha256-OLXa/Nie+6UBwmEGMa83JYQ/NxKmE1BQO3vk0hWif1I=",
+        "lastModified": 1791840344,
+        "narHash": "sha256-WWVCNyA8f06QGLQEjDwfPRO1/FXCuvkzs9OlJbH/sR4=",
         "owner": "ancsemi",
         "repo": "Haven-Desktop",
-        "rev": "07b522f1d16356e9977402e6e97d4331b8c4ea08",
+        "rev": "f45779fff92cbea1827850979132c4f3d580ebdc",
         "type": "github"
       },
       "original": {
