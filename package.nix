@@ -58,7 +58,7 @@ stdenv.mkDerivation (finalAttrs: {
     runHook preInstall
 
     app="$out/lib/haven-desktop"
-    mkdir -p "$app" "$out/bin"
+    mkdir -p "$app" "$out/bin" "$app/native/build/Release"
     cp -rT src "$app/src"
     cp -r assets "$app/assets"
     cp -r node_modules "$app/node_modules"
