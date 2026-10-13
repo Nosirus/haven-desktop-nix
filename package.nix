@@ -62,7 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -rT src "$app/src"
     cp -r assets "$app/assets"
     cp -r node_modules "$app/node_modules"
-    cp -r native/build/Release "$app/native"
+    cp -r native/build/Release "$app/native/build/Release"
     cp package.json package-lock.json "$app/"
 
     makeWrapper "${electron}/bin/electron" "$out/bin/haven-desktop" \
