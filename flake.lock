@@ -1,19 +1,15 @@
 {
   "nodes": {
-    "haven-desktop": {
+    "haven-latest": {
       "flake": false,
       "locked": {
-        "lastModified": 1791955509,
-        "narHash": "sha256-OzBYyyeiD/4hzSfWk5ZrriIFe8W+0kdX8lJefBC3jy8=",
-        "owner": "ancsemi",
-        "repo": "Haven-Desktop",
-        "rev": "e0529063f0b1dbc88a1803cdbe7067bec458813c",
-        "type": "github"
+        "narHash": "sha256-4O2BsrZzFklBa2dNx8qySm9G3JFu06jGFUOm87byQ48=",
+        "type": "file",
+        "url": "https://github.com/ancsemi/Haven-Desktop/releases/latest/download/latest-linux.yml"
       },
       "original": {
-        "owner": "ancsemi",
-        "repo": "Haven-Desktop",
-        "type": "github"
+        "type": "file",
+        "url": "https://github.com/ancsemi/Haven-Desktop/releases/latest/download/latest-linux.yml"
       }
     },
     "nixpkgs": {
@@ -34,7 +30,7 @@
     },
     "root": {
       "inputs": {
-        "haven-desktop": "haven-desktop",
+        "haven-latest": "haven-latest",
         "nixpkgs": "nixpkgs"
       }
     }
