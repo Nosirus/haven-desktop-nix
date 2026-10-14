@@ -1,100 +1,47 @@
-{ lib, stdenv, makeWrapper, electron
-, nodejs, python3, pkg-config, libpulseaudio, cacert
-, src }:
+{ lib, appimageTools, fetchurl, makeWrapper, haven-latest }:
 
 let
-  source = src;
+  yml = builtins.readFile haven-latest;
 
-  version = (builtins.fromJSON (builtins.readFile "${source}/package.json")).version;
+  parsed = builtins.match ".*version: ([^\n]+).*path: ([^\n]+)\nsha512: ([^\n]+).*" yml;
 
-  npmDeps = stdenv.mkDerivation {
-    pname = "haven-desktop-npm-deps";
-    inherit version;
-    src = source;
-    nativeBuildInputs = [ nodejs cacert ];
+  version = builtins.elemAt parsed 0;
+  appimageName = builtins.elemAt parsed 1;
+  sha512 = builtins.elemAt parsed 2;
 
-    buildPhase = ''
-      runHook preBuild
-      export HOME="$TMPDIR"
-      export npm_config_cache="$TMPDIR/npm-cache"
-      export npm_config_cafile="${cacert}/etc/ssl/certs/ca-bundle.crt"
-      export NODE_EXTRA_CA_CERTS="${cacert}/etc/ssl/certs/ca-bundle.crt"
-      npm install --ignore-scripts --omit=dev --omit=optional --no-audit --no-fund
-      mkdir -p "$out"
-      cp -r node_modules "$out/node_modules"
-      runHook postBuild
-    '';
-
-    outputHashMode = "recursive";
-    outputHash = "sha256-vnI5fgx1k+FkLAIqFFIuW/aW1E+MSeX5MTm/P2ZCwUg=";
-  };
-in
-
-stdenv.mkDerivation (finalAttrs: {
   pname = "haven-desktop";
-  inherit version;
 
-  src = source;
+  src = fetchurl {
+    url = "https://github.com/ancsemi/Haven-Desktop/releases/download/v${version}/${appimageName}";
+    inherit sha512;
+  };
 
-  nativeBuildInputs = [ makeWrapper nodejs python3 pkg-config ];
-  buildInputs = [ libpulseaudio ];
+  appimageContents = appimageTools.extract { inherit pname version src; };
+in
+appimageTools.wrapType2 {
+  inherit pname version src;
 
-  buildPhase = ''
-    runHook preBuild
+  nativeBuildInputs = [ makeWrapper ];
 
-    export HOME="$TMPDIR"
-    export npm_config_python="${python3}/bin/python3"
+  extraInstallCommands = ''
+    set -- ${appimageContents}/*.desktop
+    install -Dm444 "$1" $out/share/applications/haven-desktop.desktop
+    substituteInPlace $out/share/applications/haven-desktop.desktop \
+      --replace-fail 'Exec=AppRun' 'Exec=haven-desktop' || true
 
-    cp -r "${npmDeps}/node_modules" node_modules
+    set -- ${appimageContents}/*.png
+    if [ -e "$1" ]; then
+      install -Dm444 "$1" $out/share/icons/hicolor/256x256/apps/haven-desktop.png
+    fi
 
-    "${nodejs}/bin/node" \
-      "${nodejs}/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js" \
-      rebuild --directory=native --nodedir="${nodejs}"
-
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-
-    app="$out/lib/haven-desktop"
-    mkdir -p "$app" "$out/bin" "$app/native/build/Release"
-    cp -rT src "$app/src"
-    cp -r assets "$app/assets"
-    cp -r node_modules "$app/node_modules"
-    cp -r native/build/Release "$app/native/build/Release"
-    cp package.json package-lock.json "$app/"
-
-    makeWrapper "${electron}/bin/electron" "$out/bin/haven-desktop" \
-      --add-flags "$app" \
-      --add-flags "--no-sandbox" \
-      --set ELECTRON_IS_DEV 0 \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [ libpulseaudio ]}"
-
-    mkdir -p "$out/share/applications" \
-             "$out/share/icons/hicolor/256x256/apps" \
-             "$out/share/icons/hicolor/scalable/apps"
-    cp assets/icon.png "$out/share/icons/hicolor/256x256/apps/haven-desktop.png"
-    cat > "$out/share/applications/haven-desktop.desktop" <<EOF
-[Desktop Entry]
-Type=Application
-Name=Haven
-GenericName=Chat Client
-Comment=Private self-hosted chat
-Exec=haven-desktop
-Icon=haven-desktop
-Terminal=false
-Categories=Network;Chat;InstantMessaging;
-EOF
-
-    runHook postInstall
+    wrapProgram $out/bin/haven-desktop --add-flags "--no-sandbox"
   '';
 
   meta = {
-    description = "Haven Desktop — private, self-hosted chat client";
-    homepage = "https://ancsemi.github.io/Haven/";
+    description = "Haven Desktop — client de chat privé auto-hébergé";
+    homepage = "https://github.com/ancsemi/Haven-Desktop";
     license = lib.licenses.agpl3Only;
     mainProgram = "haven-desktop";
-    platforms = lib.platforms.linux;
+    platforms = [ "x86_64-linux" ];
   };
-})
+}
