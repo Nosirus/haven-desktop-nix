@@ -3,7 +3,7 @@
     "haven-latest": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-4O2BsrZzFklBa2dNx8qySm9G3JFu06jGFUOm87byQ48=",
+        "narHash": "sha256-ilSc97YHoH98gJuLGPb3PpkCi0JcgpYgHShxS31WCcI=",
         "type": "file",
         "url": "https://github.com/ancsemi/Haven-Desktop/releases/latest/download/latest-linux.yml"
       },
