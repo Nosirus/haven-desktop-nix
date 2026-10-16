@@ -3,13 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    haven-latest = {
-      url = "https://github.com/ancsemi/Haven-Desktop/releases/latest/download/latest-linux.yml";
-      flake = false;
-    };
   };
 
-  outputs = { self, nixpkgs, haven-latest }:
+  outputs = { self, nixpkgs }:
     let
       systems = [ "x86_64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f system);
@@ -19,15 +15,11 @@
         let pkgs = import nixpkgs { inherit system; };
         in
         {
-          default = pkgs.callPackage ./package.nix {
-            inherit haven-latest;
-          };
+          default = pkgs.callPackage ./package.nix { };
         });
 
       overlays.default = final: prev: {
-        haven-desktop = final.callPackage ./package.nix {
-          inherit haven-latest;
-        };
+        haven-desktop = final.callPackage ./package.nix { };
       };
     };
 }

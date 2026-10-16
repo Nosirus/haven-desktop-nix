@@ -43,23 +43,17 @@
   zenity,
   xdg-utils,
   xdg-user-dirs,
-  haven-latest,
 }:
 
 let
-  yml = builtins.readFile haven-latest;
+  release = builtins.fromJSON (builtins.readFile ./latest.json);
 
-  parsed = builtins.match ".*version: ([^\n]+).*path: ([^\n]+)\nsha512: ([^\n]+).*" yml;
-
-  version = builtins.elemAt parsed 0;
-  appimageName = builtins.elemAt parsed 1;
-  sha512 = builtins.elemAt parsed 2;
-
+  version = release.version;
   pname = "haven-desktop";
 
   src = fetchurl {
-    url = "https://github.com/ancsemi/Haven-Desktop/releases/download/v${version}/${appimageName}";
-    inherit sha512;
+    url = release.url;
+    sha512 = release.sha512;
   };
 
   appimageContents = appimageTools.extract { inherit pname version src; };
