@@ -24,22 +24,41 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v12
 
-      - name: Update haven-latest input
+      - name: Fetch latest release metadata
+        id: fetch
         run: |
-          nix flake update haven-latest
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/latest-linux.yml" \
+            https://github.com/ancsemi/Haven-Desktop/releases/latest/download/latest-linux.yml
+          yml="$RUNNER_TEMP/latest-linux.yml"
+          version=$(grep -m1 '^version:' "$yml" | cut -d' ' -f2-)
+          appimage=$(grep -m1 '^path:' "$yml" | cut -d' ' -f2-)
+          sha512=$(grep -m1 '^sha512:' "$yml" | cut -d' ' -f2-)
+          cat > latest.json <<EOF
+          {
+            "version": "${version}",
+            "url": "https://github.com/ancsemi/Haven-Desktop/releases/download/v${version}/${appimage}",
+            "sha512": "${sha512}"
+          }
+          EOF
+          if git diff --quiet -- latest.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build
+        if: steps.fetch.outputs.changed == 'true'
         run: |
+          git add latest.json
           nix build .#packages.x86_64-linux.default
 
       - name: Commit and push if changed
+        if: steps.fetch.outputs.changed == 'true'
         run: |
-          if git diff --quiet flake.lock; then
-            echo "flake.lock est déjà à jour"
-            exit 0
-          fi
+          version=$(grep -m1 '"version"' latest.json | cut -d'"' -f4)
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add flake.lock
-          git commit -m "flake: update haven-desktop to latest"
+          git add latest.json
+          git commit -m "haven-desktop: update to ${version}"
           git push origin master
